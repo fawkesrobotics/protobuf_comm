@@ -1,0 +1,7 @@
+Name: @PROJECT_NAME@
+Description: @PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+Requires: @PKG_CONFIG_REQUIRES@
+Cflags: @PKG_CONFIG_CFLAGS@
+Libs: -lprotobuf_comm @PKG_CONFIG_PUBLIC_LIBS@
+Libs.private: @PKG_CONFIG_PRIVATE_LIBS@
