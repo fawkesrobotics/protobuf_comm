@@ -11,6 +11,8 @@ target_link_libraries(protobuf_comm PUBLIC protobuf::libprotobuf Boost::boost
                                            Boost::thread Boost::system)
 target_include_directories(
   protobuf_comm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+set_target_properties(protobuf_comm PROPERTIES SOVERSION
+                                               ${PROJECT_VERSION_MAJOR})
 
 find_package(OpenSSL COMPONENTS Crypto)
 if(OPENSSL_FOUND)
