@@ -1,0 +1,9 @@
+steps:
+  - label: "Build"
+    plugins:
+      - kennasecurity/podman#master:
+          image: registry.fedoraproject.org/fedora:34
+          always-pull: true
+    command:
+      - dnf -y --nodocs install cmake gcc-c++ openssl-devel protobuf-devel boost-devel
+      - cmake -B build && cmake --build build -j`nproc`
