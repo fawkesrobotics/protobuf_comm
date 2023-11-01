@@ -86,6 +86,8 @@ public:
 	void send(std::shared_ptr<google::protobuf::Message> m);
 	void send(google::protobuf::Message &m);
 
+	bool outbound_done();
+
 	/** Signal that is invoked when a message has been received.
    * @return signal
    */
