@@ -177,7 +177,7 @@ ProtobufStreamClient::handle_resolve(const boost::system::error_code &err,
 		                           boost::bind(&ProtobufStreamClient::handle_connect,
 		                                       this,
 		                                       boost::asio::placeholders::error));
-	} else {
+	} else if (err != boost::asio::error::operation_aborted) {
 		disconnect_nosig();
 		sig_disconnected_(err);
 	}
@@ -214,6 +214,7 @@ ProtobufStreamClient::disconnect_nosig()
 {
 	boost::system::error_code err;
 	if (socket_.is_open()) {
+		socket_.cancel();
 		socket_.shutdown(ip::tcp::socket::shutdown_both, err);
 		socket_.close();
 	}
@@ -266,7 +267,7 @@ ProtobufStreamClient::handle_read_header(const boost::system::error_code &error)
 		                        boost::bind(&ProtobufStreamClient::handle_read_message,
 		                                    this,
 		                                    boost::asio::placeholders::error));
-	} else {
+	} else if (error != boost::asio::error::operation_aborted) {
 		disconnect_nosig();
 		sig_disconnected_(error);
 	}
@@ -311,7 +312,7 @@ ProtobufStreamClient::handle_read_message(const boost::system::error_code &error
 		}
 
 		start_recv();
-	} else {
+	} else if (error != boost::asio::error::operation_aborted) {
 		disconnect_nosig();
 		sig_disconnected_(error);
 	}
@@ -348,7 +349,7 @@ ProtobufStreamClient::handle_write(const boost::system::error_code &error,
 		} else {
 			outbound_active_ = false;
 		}
-	} else {
+	} else if (error != boost::asio::error::operation_aborted) {
 		disconnect_nosig();
 		sig_disconnected_(error);
 	}
