@@ -11,7 +11,7 @@ add_library(protobuf_comm SHARED client.cpp server.cpp peer.cpp crypto.cpp
 target_link_libraries(protobuf_comm PUBLIC protobuf::libprotobuf Boost::boost
                                            Boost::thread Boost::system)
 target_include_directories(
-  protobuf_comm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  protobuf_comm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>$<INSTALL_INTERFACE:include>)
 set_target_properties(protobuf_comm PROPERTIES SOVERSION
                                                ${PROJECT_VERSION_MAJOR})
 
@@ -26,7 +26,8 @@ include(GNUInstallDirs)
 install(
   TARGETS protobuf_comm
   EXPORT ProtobufCommTargets
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION include)
 
 install(DIRECTORY include/protobuf_comm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
