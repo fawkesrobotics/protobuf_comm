@@ -36,13 +36,13 @@ The size of the _frame header_ message structure sums up to exactly eight bytes 
 When sending a message over the network, first the protobuf message is serialized (to determine the payload size). Then the frame and message headers are prepared with the appropriate component ID, message type, and the payload size as just determined. Then the frame header is sent, possibly followed by an encryption IV, again followed by the message header and the serialized message. Examples of the message layout are provided in the following two figures:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/fawkesrobotics/protobuf_comm/images/protobuf_message_unencrypted.png">
+  <img src="https://github.com/fawkesrobotics/protobuf_comm/blob/main/images/protobuf_message_unencrypted.png?raw=true">
   <br><br>
   <b>Figure 1: </b> Packet layout diagram for unencrypted messages.
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/fawkesrobotics/protobuf_comm/images/protobuf_message_encrypted.png">
+  <img src="https://github.com/fawkesrobotics/protobuf_comm/blob/main/images/protobuf_message_encrypted.png?raw=true">
   <br><br>
   <b>Figure 2: </b> Packet layout diagram for encrypted messages.
 </p>
