@@ -1,6 +1,6 @@
 # protobuf_comm
 
-`protobuf_comm` is a lightweight communication library for [Protocol Buffers](https://protobuf.dev/).
+_protobuf_comm_ is a lightweight communication library for [Protocol Buffers](https://protobuf.dev/).
 
 It supports messages written using proto 2 syntax and additionally requires every defnined message to have a `CompType` enum containing a unique message ID (composed of a `COMP_ID` and `MSG_TYPE`), e.g., as shown below:
 
@@ -102,3 +102,6 @@ The following fields are contained:
 The framing protocol supports per-message encryption based on a symmetric block cipher. For now, the supported encryption modes are based on the AES2 with either 128 or 256 bit key length in either electronic code book (ECB) or cipher block chaining (CBC) mode.
 
 An overview of the format of an encrypted message is given in the second figure above, contrasting the first figure which depicts an unencrypted message. It is similar to the unencrypted packet with two key differences. First, the initialization vector is placed between the frame and message headers. And second, the message header and protobuf payload are encrypted.
+
+## Acknowledgements
+_protobuf_comm_ was created by Tim Niemueller as a component for the [referee box](https://github.com/robocup-logistics/rcll-refbox/) of the [RoboCup Logistics League](https://ll.robocup.org/).
