@@ -4,7 +4,8 @@ project(protobuf_comm VERSION 0.9.2
   DESCRIPTION "Protobuf wrapper for peer-to-peer communication")
 
 find_package(Protobuf REQUIRED)
-find_package(Boost REQUIRED COMPONENTS thread system)
+find_package(Boost CONFIG REQUIRED COMPONENTS thread system)
+
 
 add_library(protobuf_comm SHARED client.cpp server.cpp peer.cpp crypto.cpp
                                  message_register.cpp)
