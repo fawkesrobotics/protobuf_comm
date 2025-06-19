@@ -2,7 +2,7 @@
 
 _protobuf_comm_ is a lightweight communication library for [Protocol Buffers](https://protobuf.dev/).
 
-It supports messages written using proto 2 syntax and additionally requires every defnined message to have a `CompType` enum containing a unique message ID (composed of a `COMP_ID` and `MSG_TYPE`), e.g., as shown below:
+It supports messages written using proto 2 syntax and additionally requires every defined message to have a `CompType` enum containing a unique message ID (composed of a `COMP_ID` and `MSG_TYPE`), e.g., as shown below:
 
 ```proto
 message SearchRequest {
@@ -15,7 +15,7 @@ message SearchRequest {
 
 ```
 
-Using this unique identifiers, _protobuf_comm_ defines a simple [framing protocol](#Framing Protocol) tha it relies on to (de)-serialize messages.
+Using this unique identifiers, _protobuf_comm_ defines a simple [framing protocol](#Framing Protocol) that it relies on to (de)-serialize messages.
 
 ## Protocol Buffers Overview 
 Protocol Buffers (protobuf) are a data format used for serialisation of structured message data. 
@@ -71,7 +71,7 @@ The following fields are contained:
 - **protocol version**: The version of the protocol. The current protocol version is **2**
 - **cipher:** Indicates the cipher suite that is used. The following values can be used: 
 
-| Cypher | Byte | initialization vector size / Bytes |
+| Cipher | Byte | initialization vector size / Bytes |
 | --- | --- | --- |
 | NONE | 0x00 | 0 |
 | AES_128_ECB | 0x01 | 0 |
@@ -99,7 +99,7 @@ The following fields are contained:
 - **message type:** Numeric message ID of the specific message serialized in the payload. Must be the ID encoded in the MSG TYPE field of the CompType enum. The message type is specific to the component ID. Different component IDs can have message of the same message type which are unrelated. The message type must be encoded in network byte order (big-endian).
 
 ### Encryption
-The framing protocol supports per-message encryption based on a symmetric block cipher. For now, the supported encryption modes are based on the AES2 with either 128 or 256 bit key length in either electronic code book (ECB) or cipher block chaining (CBC) mode.
+The framing protocol supports per-message encryption based on a symmetric block cipher. For now, the supported encryption modes are based on AES with either 128 or 256 bit key length in either electronic code book (ECB) or cipher block chaining (CBC) mode.
 
 An overview of the format of an encrypted message is given in the second figure above, contrasting the first figure which depicts an unencrypted message. It is similar to the unencrypted packet with two key differences. First, the initialization vector is placed between the frame and message headers. And second, the message header and protobuf payload are encrypted.
 

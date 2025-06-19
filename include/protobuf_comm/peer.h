@@ -56,8 +56,8 @@ class BufferDecryptor;
 class ProtobufBroadcastPeer
 {
 public:
-	/** Anonymus enum for constants. */
-	enum { max_packet_length = 1024 /**< maximum packet length in bytes */ };
+	static constexpr std::size_t max_packet_length = 1024;  // maximum packet length in bytes
+
 
 	ProtobufBroadcastPeer(const std::string address, unsigned short port);
 	ProtobufBroadcastPeer(const std::string address,
