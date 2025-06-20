@@ -7,7 +7,7 @@
 
   <maintainer email="viehmann@kbsg.rwth-aachen.de">Tarik Viehmann</maintainer>
 
-  <license>GPLv2+ license</license>
+  <license>GPL-2.0-or-later</license>
 
   <buildtool_depend>cmake</buildtool_depend>
 
@@ -16,7 +16,6 @@
   <depend>openssl</depend>
   <depend>libboost-system-dev</depend>
   <depend>libboost-thread-dev</depend>
-  <depend>pkg-config</depend>
 
   <export>
     <build_type>cmake</build_type>
