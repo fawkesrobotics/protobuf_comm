@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project(protobuf_comm VERSION 0.9.2
+project(protobuf_comm VERSION 0.9.3
   DESCRIPTION "Protobuf wrapper for peer-to-peer communication")
 
 find_package(Protobuf REQUIRED)

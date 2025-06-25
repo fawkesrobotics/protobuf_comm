@@ -2,8 +2,8 @@
 Changelog for package protobuf_comm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.3 (2025-06-25)
+------------------
 * prepare for ROS release
 
 0.9.2 (2024-04-05)
