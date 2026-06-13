@@ -4,13 +4,12 @@ project(protobuf_comm VERSION 0.9.3
   DESCRIPTION "Protobuf wrapper for peer-to-peer communication")
 
 find_package(Protobuf REQUIRED)
-find_package(Boost CONFIG REQUIRED COMPONENTS thread system)
-
+find_package(Boost CONFIG REQUIRED COMPONENTS thread)
 
 add_library(protobuf_comm SHARED client.cpp server.cpp peer.cpp crypto.cpp
                                  message_register.cpp)
 target_link_libraries(protobuf_comm PUBLIC protobuf::libprotobuf Boost::boost
-                                           Boost::thread Boost::system)
+                                           Boost::thread)
 target_include_directories(
   protobuf_comm PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>$<INSTALL_INTERFACE:include>)
 set_target_properties(protobuf_comm PROPERTIES SOVERSION
@@ -56,7 +55,7 @@ if ("${PKG_CONFIG_CFLAGS}" STREQUAL "PKG_CONFIG_CFLAGS-NOTFOUND")
   set(PKG_CONFIG_CFLAGS "")
 endif()
 
-set(PKG_CONFIG_PUBLIC_LIBS "-lcrypto -lprotobuf -lboost_thread -lboost_system")
+set(PKG_CONFIG_PUBLIC_LIBS "-lcrypto -lprotobuf -lboost_thread")
 set(PKG_CONFIG_PRIVATE_LIBS "")
 set(PKG_CONFIG_CFLAGS "")
 
