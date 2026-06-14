@@ -41,59 +41,55 @@
 #include <string>
 
 #ifdef HAVE_LIBCRYPTO
-#	include <openssl/ossl_typ.h>
+#include <openssl/ossl_typ.h>
 #endif
 
 namespace protobuf_comm {
 
-class BufferEncryptor
-{
+class BufferEncryptor {
 public:
-	BufferEncryptor(const std::string &key, std::string cipher_name = "AES-128-ECB");
-	~BufferEncryptor();
+  BufferEncryptor(const std::string &key,
+                  std::string cipher_name = "AES-128-ECB");
+  ~BufferEncryptor();
 
-	void encrypt(const std::string &plain, std::string &enc);
+  void encrypt(const std::string &plain, std::string &enc);
 
-	/** Get cipher ID.
+  /** Get cipher ID.
    * @return cipher ID */
-	int
-	cipher_id() const
-	{
-		return cipher_id_;
-	}
+  int cipher_id() const { return cipher_id_; }
 
-	size_t encrypted_buffer_size(size_t plain_length);
+  size_t encrypted_buffer_size(size_t plain_length);
 
 private:
-	unsigned char *        key_;
-	long long unsigned int iv_;
+  unsigned char *key_;
+  long long unsigned int iv_;
 
 #ifdef HAVE_LIBCRYPTO
-	const EVP_CIPHER *cipher_;
+  const EVP_CIPHER *cipher_;
 #endif
 
-	int cipher_id_;
+  int cipher_id_;
 };
 
-class BufferDecryptor
-{
+class BufferDecryptor {
 public:
-	BufferDecryptor(const std::string &key);
-	~BufferDecryptor();
+  BufferDecryptor(const std::string &key);
+  ~BufferDecryptor();
 
-	size_t decrypt(int cipher, const void *enc, size_t enc_size, void *plain, size_t plain_size);
-
-private:
-	void generate_key(int cipher);
+  size_t decrypt(int cipher, const void *enc, size_t enc_size, void *plain,
+                 size_t plain_size);
 
 private:
-	std::string                key_;
-	std::map<int, std::string> keys_;
+  void generate_key(int cipher);
+
+private:
+  std::string key_;
+  std::map<int, std::string> keys_;
 };
 
 #ifdef HAVE_LIBCRYPTO
 const char *cipher_name_by_id(int cipher);
-int         cipher_name_to_id(const char *cipher);
+int cipher_name_to_id(const char *cipher);
 
 const EVP_CIPHER *cipher_by_id(int cipher);
 const EVP_CIPHER *cipher_by_name(const char *cipher);

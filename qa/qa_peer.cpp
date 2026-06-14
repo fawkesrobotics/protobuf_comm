@@ -46,70 +46,63 @@ using namespace llsf_msgs;
 
 /// @cond QA
 
-static bool            quit = false;
+static bool quit = false;
 ProtobufBroadcastPeer *peer;
 
-void
-signal_handler(const boost::system::error_code &error, int signum)
-{
-	if (!error) {
-		quit = true;
-	}
+void signal_handler(const boost::system::error_code &error, int signum) {
+  if (!error) {
+    quit = true;
+  }
 }
 
-void
-handle_error(const boost::system::error_code &error)
-{
-	printf("Error: %s\n", error.message().c_str());
+void handle_error(const boost::system::error_code &error) {
+  printf("Error: %s\n", error.message().c_str());
 }
 
-void
-handle_message(boost::asio::ip::udp::endpoint &           sender,
-               uint16_t                                   component_id,
-               uint16_t                                   msg_type,
-               std::shared_ptr<google::protobuf::Message> msg)
-{
-	printf("Received message of type %u from %s\n", msg_type, sender.address().to_string().c_str());
-	std::shared_ptr<Person> p;
-	if ((p = std::dynamic_pointer_cast<Person>(msg))) {
-		printf("Person %i: %s <%s>\n", p->id(), p->name().c_str(), p->email().c_str());
-	}
+void handle_message(boost::asio::ip::udp::endpoint &sender,
+                    uint16_t component_id, uint16_t msg_type,
+                    std::shared_ptr<google::protobuf::Message> msg) {
+  printf("Received message of type %u from %s\n", msg_type,
+         sender.address().to_string().c_str());
+  std::shared_ptr<Person> p;
+  if ((p = std::dynamic_pointer_cast<Person>(msg))) {
+    printf("Person %i: %s <%s>\n", p->id(), p->name().c_str(),
+           p->email().c_str());
+  }
 
-	//server.send(client, component_id, msg_type, *p);
+  // server.send(client, component_id, msg_type, *p);
 }
 
-int
-main(int argc, char **argv)
-{
-	unsigned short send_to_port = 1234;
-	unsigned short recv_on_port = 1234;
-	if (argc >= 3) {
-		send_to_port = boost::lexical_cast<unsigned short>(argv[1]);
-		recv_on_port = boost::lexical_cast<unsigned short>(argv[2]);
-	}
-	peer = new ProtobufBroadcastPeer("192.168.0.255", send_to_port, recv_on_port);
-	boost::asio::io_context io_context;
-	MessageRegister &message_register = peer->message_register();
-	message_register.add_message_type<Person>(1, 2);
-	peer->signal_received().connect(handle_message);
-	peer->signal_error().connect(handle_error);
-	// Construct a signal set registered for process termination.
-	boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
-	// Start an asynchronous wait for one of the signals to occur.
-	signals.async_wait(signal_handler);
-	if (argc >= 4) {
-		Person p;
-		p.set_id(1);
-		p.set_name("Tim Niemueller");
-		p.set_email("niemueller@kbsg.rwth-aachen.de");
-		peer->send(1, 2, p);
-	}
-	do {
-		io_context.run();
-		io_context.restart();
-	} while (!quit);
-	delete peer;
-	// Delete all global objects allocated by libprotobuf
-	google::protobuf::ShutdownProtobufLibrary();
+int main(int argc, char **argv) {
+  unsigned short send_to_port = 1234;
+  unsigned short recv_on_port = 1234;
+  if (argc >= 3) {
+    send_to_port = boost::lexical_cast<unsigned short>(argv[1]);
+    recv_on_port = boost::lexical_cast<unsigned short>(argv[2]);
+  }
+  peer = new ProtobufBroadcastPeer("192.168.0.255", send_to_port, recv_on_port);
+  boost::asio::io_context io_context;
+  MessageRegister &message_register = peer->message_register();
+  message_register.add_message_type<Person>(1, 2);
+  peer->signal_received().connect(handle_message);
+  peer->signal_error().connect(handle_error);
+  // Construct a signal set registered for process termination.
+  boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
+  // Start an asynchronous wait for one of the signals to occur.
+  signals.async_wait(signal_handler);
+  if (argc >= 4) {
+    Person p;
+    p.set_id(1);
+    p.set_name("Tim Niemueller");
+    p.set_email("niemueller@kbsg.rwth-aachen.de");
+    peer->send(1, 2, p);
+  }
+  do {
+    io_context.run();
+    io_context.restart();
+  } while (!quit);
+  delete peer;
+  // Delete all global objects allocated by libprotobuf
+  google::protobuf::ShutdownProtobufLibrary();
 }
 /// @endcond

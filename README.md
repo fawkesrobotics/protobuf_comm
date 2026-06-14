@@ -17,17 +17,17 @@ message SearchRequest {
 
 Using this unique identifiers, _protobuf_comm_ defines a simple [framing protocol](#Framing Protocol) that it relies on to (de)-serialize messages.
 
-## Protocol Buffers Overview 
-Protocol Buffers (protobuf) are a data format used for serialisation of structured message data. 
+## Protocol Buffers Overview
+Protocol Buffers (protobuf) are a data format used for serialisation of structured message data.
 The format is extensible and provides for basic data types, nesting, structure re-use, efficient serialization and deserialization, and variable-length lists.
 The message types are defined in a special definition language akin to C/C++ structs.
 In order to easily serialize and deserialize data in the protobuf format, special compilers are provided.
 These take the protobuf message definition and automatically create code for creating and reading messages in the provided protobuf definitions in common languages like C++, Java or Python.
 
 ## Framing Protocol
-Since serialized protobuf message do not contain information about the message length or type, or additional space for additional meta data like encryption-related information, a framing protocol is used which wraps the serialized protobuf messages and allows for easier handling of the messages on the receiver's side. The protocol consists of two parts, a protocol frame which contains the message-related meta data and a message header. 
+Since serialized protobuf message do not contain information about the message length or type, or additional space for additional meta data like encryption-related information, a framing protocol is used which wraps the serialized protobuf messages and allows for easier handling of the messages on the receiver's side. The protocol consists of two parts, a protocol frame which contains the message-related meta data and a message header.
 
-Each message that is sent over the network is prepended by the headers. The receiver can use the definition of the header and the information contained within to read the following serialized protobuf message correctly. 
+Each message that is sent over the network is prepended by the headers. The receiver can use the definition of the header and the information contained within to read the following serialized protobuf message correctly.
 
 ### Header Format
 Header messages must be 4-byte-aligned, i.e. the addresses of the data entries is evenly divisible by 4.
@@ -69,7 +69,7 @@ typedef struct {
 
 The following fields are contained:
 - **protocol version**: The version of the protocol. The current protocol version is **2**
-- **cipher:** Indicates the cipher suite that is used. The following values can be used: 
+- **cipher:** Indicates the cipher suite that is used. The following values can be used:
 
 | Cipher | Byte | initialization vector size / Bytes |
 | --- | --- | --- |
@@ -81,7 +81,7 @@ The following fields are contained:
 
 - **reserved:** Currently unused for future extensions. Bytes must be set to 0.
 - **payload size:** Size in bytes of the following payload. This does include the message header and the serialized protobuf message. It does not include an encryption IV header (if required by cipher). The payload size must be encoded in network byte order (big-endian). </p>
-The fields must be contained in the given sizes and order but do not need to be implemented as a C++ struct. 
+The fields must be contained in the given sizes and order but do not need to be implemented as a C++ struct.
 
 ### Message Header
 
@@ -94,7 +94,7 @@ typedef struct {
   uint16_t msg_type ;
 } message_header_t;
 ```
-The following fields are contained: 
+The following fields are contained:
 - **component ID:** General ID, general addressee of message. For refbox message must be set to 2000 (as encoded in the protobuf messages’ COMP ID field of the CompType enum. The component ID must be encoded in network byte order (big-endian).
 - **message type:** Numeric message ID of the specific message serialized in the payload. Must be the ID encoded in the MSG TYPE field of the CompType enum. The message type is specific to the component ID. Different component IDs can have message of the same message type which are unrelated. The message type must be encoded in network byte order (big-endian).
 

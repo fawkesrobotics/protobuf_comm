@@ -52,19 +52,18 @@ namespace protobuf_comm {
 
 /** Constructor. */
 ProtobufStreamClient::ProtobufStreamClient()
-: resolver_(io_context_), socket_(io_context_),
-  io_work_guard_(boost::asio::make_work_guard(io_context_))
-{
-	message_register_     = new MessageRegister();
-	own_message_register_ = true;
-	connected_            = false;
-	outbound_active_      = false;
-	in_data_size_         = 1024;
-	frame_header_version_ = PB_FRAME_V2;
-	in_frame_header_size_ = sizeof(frame_header_t);
-	in_frame_header_      = malloc(in_frame_header_size_);
-	in_data_              = malloc(in_data_size_);
-	run_asio();
+    : resolver_(io_context_), socket_(io_context_),
+      io_work_guard_(boost::asio::make_work_guard(io_context_)) {
+  message_register_ = new MessageRegister();
+  own_message_register_ = true;
+  connected_ = false;
+  outbound_active_ = false;
+  in_data_size_ = 1024;
+  frame_header_version_ = PB_FRAME_V2;
+  in_frame_header_size_ = sizeof(frame_header_t);
+  in_frame_header_ = malloc(in_frame_header_size_);
+  in_data_ = malloc(in_data_size_);
+  run_asio();
 }
 
 /** Constructor.
@@ -73,65 +72,58 @@ ProtobufStreamClient::ProtobufStreamClient()
  * message creation.
  */
 ProtobufStreamClient::ProtobufStreamClient(std::vector<std::string> &proto_path)
-: resolver_(io_context_), socket_(io_context_),
-  io_work_guard_(boost::asio::make_work_guard(io_context_))
-{
-	message_register_     = new MessageRegister(proto_path);
-	own_message_register_ = true;
-	connected_            = false;
-	outbound_active_      = false;
-	in_data_size_         = 1024;
-	in_data_              = malloc(in_data_size_);
-	frame_header_version_ = PB_FRAME_V2;
-	in_frame_header_size_ = sizeof(frame_header_t);
-	in_frame_header_      = malloc(in_frame_header_size_);
-	run_asio();
+    : resolver_(io_context_), socket_(io_context_),
+      io_work_guard_(boost::asio::make_work_guard(io_context_)) {
+  message_register_ = new MessageRegister(proto_path);
+  own_message_register_ = true;
+  connected_ = false;
+  outbound_active_ = false;
+  in_data_size_ = 1024;
+  in_data_ = malloc(in_data_size_);
+  frame_header_version_ = PB_FRAME_V2;
+  in_frame_header_size_ = sizeof(frame_header_t);
+  in_frame_header_ = malloc(in_frame_header_size_);
+  run_asio();
 }
 
 /** Constructor.
  * @param mr message register to use to (de)serialize messages
  * @param header_version protobuf protocol frame header version to use,
  */
-ProtobufStreamClient::ProtobufStreamClient(MessageRegister *      mr,
-                                           frame_header_version_t header_version)
-: resolver_(io_context_),
-  socket_(io_context_),
-  io_work_guard_(boost::asio::make_work_guard(io_context_)),
-  message_register_(mr),
-  own_message_register_(false),
-  frame_header_version_(header_version)
-{
-	connected_       = false;
-	outbound_active_ = false;
-	in_data_size_    = 1024;
-	in_data_         = malloc(in_data_size_);
-	if (frame_header_version_ == PB_FRAME_V1) {
-		in_frame_header_size_ = sizeof(frame_header_v1_t);
-	} else {
-		in_frame_header_size_ = sizeof(frame_header_t);
-	}
-	in_frame_header_ = malloc(in_frame_header_size_);
-	run_asio();
+ProtobufStreamClient::ProtobufStreamClient(
+    MessageRegister *mr, frame_header_version_t header_version)
+    : resolver_(io_context_), socket_(io_context_),
+      io_work_guard_(boost::asio::make_work_guard(io_context_)),
+      message_register_(mr), own_message_register_(false),
+      frame_header_version_(header_version) {
+  connected_ = false;
+  outbound_active_ = false;
+  in_data_size_ = 1024;
+  in_data_ = malloc(in_data_size_);
+  if (frame_header_version_ == PB_FRAME_V1) {
+    in_frame_header_size_ = sizeof(frame_header_v1_t);
+  } else {
+    in_frame_header_size_ = sizeof(frame_header_t);
+  }
+  in_frame_header_ = malloc(in_frame_header_size_);
+  run_asio();
 }
 
 /** Destructor. */
-ProtobufStreamClient::~ProtobufStreamClient()
-{
-	disconnect_nosig();
-	io_work_guard_.reset();
-	io_context_.stop();
-	asio_thread_.join();
-	free(in_data_);
-	free(in_frame_header_);
-	if (own_message_register_) {
-		delete message_register_;
-	}
+ProtobufStreamClient::~ProtobufStreamClient() {
+  disconnect_nosig();
+  io_work_guard_.reset();
+  io_context_.stop();
+  asio_thread_.join();
+  free(in_data_);
+  free(in_frame_header_);
+  if (own_message_register_) {
+    delete message_register_;
+  }
 }
 
-void
-ProtobufStreamClient::run_asio()
-{
-	asio_thread_ = std::thread([this]() { this->io_context_.run(); });
+void ProtobufStreamClient::run_asio() {
+  asio_thread_ = std::thread([this]() { this->io_context_.run(); });
 }
 
 /** Asynchronous connect.
@@ -141,203 +133,181 @@ ProtobufStreamClient::run_asio()
  * @param host host to connect to
  * @param port TCP port to connect to
  */
-void
-ProtobufStreamClient::async_connect(const char *host, unsigned short port)
-{
-	resolver_.async_resolve(host,
-	                        boost::lexical_cast<std::string>(port),
-	                        boost::bind(&ProtobufStreamClient::handle_resolve,
-	                                    this,
-	                                    boost::asio::placeholders::error,
-	                                    boost::asio::placeholders::results));
+void ProtobufStreamClient::async_connect(const char *host,
+                                         unsigned short port) {
+  resolver_.async_resolve(host, boost::lexical_cast<std::string>(port),
+                          boost::bind(&ProtobufStreamClient::handle_resolve,
+                                      this, boost::asio::placeholders::error,
+                                      boost::asio::placeholders::results));
 }
 
-void
-ProtobufStreamClient::handle_resolve(const boost::system::error_code &         err,
-                                     boost::asio::ip::tcp::resolver::results_type endpoints)
-{
-	if (!err) {
-		boost::asio::async_connect(socket_,
-		                           endpoints,
-		                           boost::bind(&ProtobufStreamClient::handle_connect,
-		                                       this,
-		                                       boost::asio::placeholders::error));
-	} else if (err != boost::asio::error::operation_aborted) {
-		disconnect_nosig();
-		sig_disconnected_(err);
-	}
+void ProtobufStreamClient::handle_resolve(
+    const boost::system::error_code &err,
+    boost::asio::ip::tcp::resolver::results_type endpoints) {
+  if (!err) {
+    boost::asio::async_connect(
+        socket_, endpoints,
+        boost::bind(&ProtobufStreamClient::handle_connect, this,
+                    boost::asio::placeholders::error));
+  } else if (err != boost::asio::error::operation_aborted) {
+    disconnect_nosig();
+    sig_disconnected_(err);
+  }
 }
 
-void
-ProtobufStreamClient::handle_connect(const boost::system::error_code &err)
-{
-	if (!err) {
+void ProtobufStreamClient::handle_connect(
+    const boost::system::error_code &err) {
+  if (!err) {
 #if BOOST_VERSION >= 105400 && BOOST_VERSION < 105500
-		// Boost 1.54 has a bug that causes async_connect to report success
-		// if it cannot connect at all to the other side, cf.
-		// https://svn.boost.org/trac/boost/ticket/8795
-		// Work around by explicitly checking for connected status
-		boost::system::error_code ec;
-		socket_.remote_endpoint(ec);
-		if (ec == boost::system::errc::not_connected) {
-			disconnect_nosig();
-			sig_disconnected_(ec);
-			return;
-		}
+    // Boost 1.54 has a bug that causes async_connect to report success
+    // if it cannot connect at all to the other side, cf.
+    // https://svn.boost.org/trac/boost/ticket/8795
+    // Work around by explicitly checking for connected status
+    boost::system::error_code ec;
+    socket_.remote_endpoint(ec);
+    if (ec == boost::system::errc::not_connected) {
+      disconnect_nosig();
+      sig_disconnected_(ec);
+      return;
+    }
 #endif
-		connected_ = true;
-		start_recv();
-		sig_connected_();
-	} else {
-		disconnect_nosig();
-		sig_disconnected_(err);
-	}
+    connected_ = true;
+    start_recv();
+    sig_connected_();
+  } else {
+    disconnect_nosig();
+    sig_disconnected_(err);
+  }
 }
 
-void
-ProtobufStreamClient::disconnect_nosig()
-{
-	boost::system::error_code err;
-	if (socket_.is_open()) {
-		socket_.cancel();
-		socket_.shutdown(ip::tcp::socket::shutdown_both, err);
-		socket_.close();
-	}
-	connected_ = false;
+void ProtobufStreamClient::disconnect_nosig() {
+  boost::system::error_code err;
+  if (socket_.is_open()) {
+    socket_.cancel();
+    socket_.shutdown(ip::tcp::socket::shutdown_both, err);
+    socket_.close();
+  }
+  connected_ = false;
 }
 
 /** Disconnect from remote host. */
-void
-ProtobufStreamClient::disconnect()
-{
-	disconnect_nosig();
-	sig_disconnected_(boost::system::error_code());
+void ProtobufStreamClient::disconnect() {
+  disconnect_nosig();
+  sig_disconnected_(boost::system::error_code());
 }
 
-void
-ProtobufStreamClient::start_recv()
-{
-	boost::asio::async_read(socket_,
-	                        boost::asio::buffer(in_frame_header_, in_frame_header_size_),
-	                        boost::bind(&ProtobufStreamClient::handle_read_header,
-	                                    this,
-	                                    boost::asio::placeholders::error));
+void ProtobufStreamClient::start_recv() {
+  boost::asio::async_read(
+      socket_, boost::asio::buffer(in_frame_header_, in_frame_header_size_),
+      boost::bind(&ProtobufStreamClient::handle_read_header, this,
+                  boost::asio::placeholders::error));
 }
 
-void
-ProtobufStreamClient::handle_read_header(const boost::system::error_code &error)
-{
-	if (!error) {
-		size_t to_read;
-		if (frame_header_version_ == PB_FRAME_V1) {
-			frame_header_v1_t *frame_header = (frame_header_v1_t *)in_frame_header_;
-			to_read                         = ntohl(frame_header->payload_size);
-		} else {
-			frame_header_t *frame_header = (frame_header_t *)in_frame_header_;
-			to_read                      = ntohl(frame_header->payload_size);
-		}
-		if (to_read > in_data_size_) {
-			void *new_data = realloc(in_data_, to_read);
-			if (new_data) {
-				in_data_size_ = to_read;
-				in_data_      = new_data;
-			} else {
-				disconnect_nosig();
-				sig_disconnected_(errc::make_error_code(errc::not_enough_memory));
-			}
-		}
-		// setup new read
-		boost::asio::async_read(socket_,
-		                        boost::asio::buffer(in_data_, to_read),
-		                        boost::bind(&ProtobufStreamClient::handle_read_message,
-		                                    this,
-		                                    boost::asio::placeholders::error));
-	} else if (error != boost::asio::error::operation_aborted) {
-		disconnect_nosig();
-		sig_disconnected_(error);
-	}
+void ProtobufStreamClient::handle_read_header(
+    const boost::system::error_code &error) {
+  if (!error) {
+    size_t to_read;
+    if (frame_header_version_ == PB_FRAME_V1) {
+      frame_header_v1_t *frame_header = (frame_header_v1_t *)in_frame_header_;
+      to_read = ntohl(frame_header->payload_size);
+    } else {
+      frame_header_t *frame_header = (frame_header_t *)in_frame_header_;
+      to_read = ntohl(frame_header->payload_size);
+    }
+    if (to_read > in_data_size_) {
+      void *new_data = realloc(in_data_, to_read);
+      if (new_data) {
+        in_data_size_ = to_read;
+        in_data_ = new_data;
+      } else {
+        disconnect_nosig();
+        sig_disconnected_(errc::make_error_code(errc::not_enough_memory));
+      }
+    }
+    // setup new read
+    boost::asio::async_read(
+        socket_, boost::asio::buffer(in_data_, to_read),
+        boost::bind(&ProtobufStreamClient::handle_read_message, this,
+                    boost::asio::placeholders::error));
+  } else if (error != boost::asio::error::operation_aborted) {
+    disconnect_nosig();
+    sig_disconnected_(error);
+  }
 }
 
-void
-ProtobufStreamClient::handle_read_message(const boost::system::error_code &error)
-{
-	if (!error) {
-		frame_header_t   frame_header;
-		message_header_t message_header;
-		void *           data;
+void ProtobufStreamClient::handle_read_message(
+    const boost::system::error_code &error) {
+  if (!error) {
+    frame_header_t frame_header;
+    message_header_t message_header;
+    void *data;
 
-		if (frame_header_version_ == PB_FRAME_V1) {
-			frame_header_v1_t *frame_header_v1 = (frame_header_v1_t *)in_frame_header_;
-			frame_header.header_version        = PB_FRAME_V1;
-			frame_header.cipher                = PB_ENCRYPTION_NONE;
-			frame_header.payload_size =
-			  htonl(ntohl(frame_header_v1->payload_size) + sizeof(message_header_t));
-			message_header.component_id = frame_header_v1->component_id;
-			message_header.msg_type     = frame_header_v1->msg_type;
-			data                        = in_data_;
-		} else {
-			memcpy(&frame_header, in_frame_header_, sizeof(frame_header_t));
+    if (frame_header_version_ == PB_FRAME_V1) {
+      frame_header_v1_t *frame_header_v1 =
+          (frame_header_v1_t *)in_frame_header_;
+      frame_header.header_version = PB_FRAME_V1;
+      frame_header.cipher = PB_ENCRYPTION_NONE;
+      frame_header.payload_size = htonl(ntohl(frame_header_v1->payload_size) +
+                                        sizeof(message_header_t));
+      message_header.component_id = frame_header_v1->component_id;
+      message_header.msg_type = frame_header_v1->msg_type;
+      data = in_data_;
+    } else {
+      memcpy(&frame_header, in_frame_header_, sizeof(frame_header_t));
 
-			message_header_t *msg_header = static_cast<message_header_t *>(in_data_);
-			message_header.component_id  = msg_header->component_id;
-			message_header.msg_type      = msg_header->msg_type;
+      message_header_t *msg_header = static_cast<message_header_t *>(in_data_);
+      message_header.component_id = msg_header->component_id;
+      message_header.msg_type = msg_header->msg_type;
 
-			data = (char *)in_data_ + sizeof(message_header);
-		}
+      data = (char *)in_data_ + sizeof(message_header);
+    }
 
-		uint16_t comp_id  = ntohs(message_header.component_id);
-		uint16_t msg_type = ntohs(message_header.msg_type);
-		try {
-			std::shared_ptr<google::protobuf::Message> m =
-			  message_register_->deserialize(frame_header, message_header, data);
+    uint16_t comp_id = ntohs(message_header.component_id);
+    uint16_t msg_type = ntohs(message_header.msg_type);
+    try {
+      std::shared_ptr<google::protobuf::Message> m =
+          message_register_->deserialize(frame_header, message_header, data);
 
-			sig_rcvd_(comp_id, msg_type, m);
-		} catch (std::runtime_error &e) {
-			sig_recv_failed_(comp_id, msg_type, e.what());
-		}
+      sig_rcvd_(comp_id, msg_type, m);
+    } catch (std::runtime_error &e) {
+      sig_recv_failed_(comp_id, msg_type, e.what());
+    }
 
-		start_recv();
-	} else if (error != boost::asio::error::operation_aborted) {
-		disconnect_nosig();
-		sig_disconnected_(error);
-	}
+    start_recv();
+  } else if (error != boost::asio::error::operation_aborted) {
+    disconnect_nosig();
+    sig_disconnected_(error);
+  }
 }
 
 /** Check whether all outbound messages have been sent.
  * @return true if outbound sending is still active, false otherwise
  */
-bool
-ProtobufStreamClient::outbound_done()
-{
-	return !outbound_active_;
-}
+bool ProtobufStreamClient::outbound_done() { return !outbound_active_; }
 
-void
-ProtobufStreamClient::handle_write(const boost::system::error_code &error,
-                                   size_t /*bytes_transferred*/,
-                                   QueueEntry *entry)
-{
-	delete entry;
+void ProtobufStreamClient::handle_write(const boost::system::error_code &error,
+                                        size_t /*bytes_transferred*/,
+                                        QueueEntry *entry) {
+  delete entry;
 
-	if (!error) {
-		std::lock_guard<std::mutex> lock(outbound_mutex_);
-		if (!outbound_queue_.empty()) {
-			QueueEntry *front_entry = outbound_queue_.front();
-			outbound_queue_.pop();
-			boost::asio::async_write(socket_,
-			                         front_entry->buffers,
-			                         boost::bind(&ProtobufStreamClient::handle_write,
-			                                     this,
-			                                     boost::asio::placeholders::error,
-			                                     boost::asio::placeholders::bytes_transferred,
-			                                     front_entry));
-		} else {
-			outbound_active_ = false;
-		}
-	} else if (error != boost::asio::error::operation_aborted) {
-		disconnect_nosig();
-		sig_disconnected_(error);
-	}
+  if (!error) {
+    std::lock_guard<std::mutex> lock(outbound_mutex_);
+    if (!outbound_queue_.empty()) {
+      QueueEntry *front_entry = outbound_queue_.front();
+      outbound_queue_.pop();
+      boost::asio::async_write(
+          socket_, front_entry->buffers,
+          boost::bind(&ProtobufStreamClient::handle_write, this,
+                      boost::asio::placeholders::error,
+                      boost::asio::placeholders::bytes_transferred,
+                      front_entry));
+    } else {
+      outbound_active_ = false;
+    }
+  } else if (error != boost::asio::error::operation_aborted) {
+    disconnect_nosig();
+    sig_disconnected_(error);
+  }
 }
 
 /** Send a message to the server.
@@ -345,87 +315,84 @@ ProtobufStreamClient::handle_write(const boost::system::error_code &error,
  * @param msg_type numeric message type
  * @param m message to send
  */
-void
-ProtobufStreamClient::send(uint16_t component_id, uint16_t msg_type, google::protobuf::Message &m)
-{
-	if (!connected_) {
-		throw std::runtime_error("Cannot send while not connected");
-	}
+void ProtobufStreamClient::send(uint16_t component_id, uint16_t msg_type,
+                                google::protobuf::Message &m) {
+  if (!connected_) {
+    throw std::runtime_error("Cannot send while not connected");
+  }
 
-	QueueEntry *entry = new QueueEntry();
-	message_register_->serialize(component_id,
-	                             msg_type,
-	                             m,
-	                             entry->frame_header,
-	                             entry->message_header,
-	                             entry->serialized_message);
+  QueueEntry *entry = new QueueEntry();
+  message_register_->serialize(component_id, msg_type, m, entry->frame_header,
+                               entry->message_header,
+                               entry->serialized_message);
 
-	if (frame_header_version_ == PB_FRAME_V1) {
-		entry->frame_header_v1.component_id = entry->message_header.component_id;
-		entry->frame_header_v1.msg_type     = entry->message_header.msg_type;
-		entry->frame_header_v1.payload_size =
-		  htonl(ntohl(entry->frame_header.payload_size) - sizeof(message_header_t));
+  if (frame_header_version_ == PB_FRAME_V1) {
+    entry->frame_header_v1.component_id = entry->message_header.component_id;
+    entry->frame_header_v1.msg_type = entry->message_header.msg_type;
+    entry->frame_header_v1.payload_size = htonl(
+        ntohl(entry->frame_header.payload_size) - sizeof(message_header_t));
 
-		entry->buffers[0] = boost::asio::buffer(&entry->frame_header_v1, sizeof(frame_header_v1_t));
-		entry->buffers[1] = boost::asio::const_buffer();
-	} else {
-		entry->buffers[0] = boost::asio::buffer(&entry->frame_header, sizeof(frame_header_t));
-		entry->buffers[1] = boost::asio::buffer(&entry->message_header, sizeof(message_header_t));
-	}
-	entry->buffers[2] = boost::asio::buffer(entry->serialized_message);
+    entry->buffers[0] =
+        boost::asio::buffer(&entry->frame_header_v1, sizeof(frame_header_v1_t));
+    entry->buffers[1] = boost::asio::const_buffer();
+  } else {
+    entry->buffers[0] =
+        boost::asio::buffer(&entry->frame_header, sizeof(frame_header_t));
+    entry->buffers[1] =
+        boost::asio::buffer(&entry->message_header, sizeof(message_header_t));
+  }
+  entry->buffers[2] = boost::asio::buffer(entry->serialized_message);
 
-	std::lock_guard<std::mutex> lock(outbound_mutex_);
-	if (outbound_active_) {
-		outbound_queue_.push(entry);
-	} else {
-		outbound_active_ = true;
-		boost::asio::async_write(socket_,
-		                         entry->buffers,
-		                         boost::bind(&ProtobufStreamClient::handle_write,
-		                                     this,
-		                                     boost::asio::placeholders::error,
-		                                     boost::asio::placeholders::bytes_transferred,
-		                                     entry));
-	}
+  std::lock_guard<std::mutex> lock(outbound_mutex_);
+  if (outbound_active_) {
+    outbound_queue_.push(entry);
+  } else {
+    outbound_active_ = true;
+    boost::asio::async_write(
+        socket_, entry->buffers,
+        boost::bind(&ProtobufStreamClient::handle_write, this,
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred, entry));
+  }
 }
 
 /** Send a message to the server.
- * @param m message to send, the message must be of a type with a suitable CompType
- * enum indicating component ID and message type.
+ * @param m message to send, the message must be of a type with a suitable
+ * CompType enum indicating component ID and message type.
  */
-void
-ProtobufStreamClient::send(google::protobuf::Message &m)
-{
-	const google::protobuf::Descriptor *    desc     = m.GetDescriptor();
-	const google::protobuf::EnumDescriptor *enumdesc = desc->FindEnumTypeByName("CompType");
-	if (!enumdesc) {
-		throw std::logic_error("Message does not have CompType enum");
-	}
-	const google::protobuf::EnumValueDescriptor *compdesc = enumdesc->FindValueByName("COMP_ID");
-	const google::protobuf::EnumValueDescriptor *msgtdesc = enumdesc->FindValueByName("MSG_TYPE");
-	if (!compdesc || !msgtdesc) {
-		throw std::logic_error("Message CompType enum hs no COMP_ID or MSG_TYPE value");
-	}
-	int comp_id  = compdesc->number();
-	int msg_type = msgtdesc->number();
-	if (comp_id < 0 || comp_id > std::numeric_limits<uint16_t>::max()) {
-		throw std::logic_error("Message has invalid COMP_ID");
-	}
-	if (msg_type < 0 || msg_type > std::numeric_limits<uint16_t>::max()) {
-		throw std::logic_error("Message has invalid MSG_TYPE");
-	}
+void ProtobufStreamClient::send(google::protobuf::Message &m) {
+  const google::protobuf::Descriptor *desc = m.GetDescriptor();
+  const google::protobuf::EnumDescriptor *enumdesc =
+      desc->FindEnumTypeByName("CompType");
+  if (!enumdesc) {
+    throw std::logic_error("Message does not have CompType enum");
+  }
+  const google::protobuf::EnumValueDescriptor *compdesc =
+      enumdesc->FindValueByName("COMP_ID");
+  const google::protobuf::EnumValueDescriptor *msgtdesc =
+      enumdesc->FindValueByName("MSG_TYPE");
+  if (!compdesc || !msgtdesc) {
+    throw std::logic_error(
+        "Message CompType enum hs no COMP_ID or MSG_TYPE value");
+  }
+  int comp_id = compdesc->number();
+  int msg_type = msgtdesc->number();
+  if (comp_id < 0 || comp_id > std::numeric_limits<uint16_t>::max()) {
+    throw std::logic_error("Message has invalid COMP_ID");
+  }
+  if (msg_type < 0 || msg_type > std::numeric_limits<uint16_t>::max()) {
+    throw std::logic_error("Message has invalid MSG_TYPE");
+  }
 
-	send(comp_id, msg_type, m);
+  send(comp_id, msg_type, m);
 }
 
 /** Send a message to the server.
- * @param m message to send, the message must be of a type with a suitable CompType
- * enum indicating component ID and message type.
+ * @param m message to send, the message must be of a type with a suitable
+ * CompType enum indicating component ID and message type.
  */
-void
-ProtobufStreamClient::send(std::shared_ptr<google::protobuf::Message> m)
-{
-	send(*m);
+void ProtobufStreamClient::send(std::shared_ptr<google::protobuf::Message> m) {
+  send(*m);
 }
 
 } // end namespace protobuf_comm
