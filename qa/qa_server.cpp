@@ -86,36 +86,27 @@ handle_message(ProtobufStreamServer::ClientID             client,
   if ((p = std::dynamic_pointer_cast<Person>(msg))) {
     printf("Person %i: %s <%s>\n", p->id(), p->name().c_str(), p->email().c_str());
   }
-
   server.send(client, component_id, msg_type, *p);
   */
 }
-
 int
 main(int argc, char **argv)
 {
-	boost::asio::io_service io_service;
-
+	boost::asio::io_context io_context;
 	//MessageRegister & message_register = server.message_register();
 	//message_register.add_message_type<Person>(1, 2);
-
 	server.signal_connected().connect(client_connected);
 	server.signal_disconnected().connect(client_disconnected);
 	server.signal_received().connect(handle_message);
-
 	// Construct a signal set registered for process termination.
-	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
-
+	boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
 	// Start an asynchronous wait for one of the signals to occur.
 	signals.async_wait(signal_handler);
-
 	do {
-		io_service.run();
-		io_service.reset();
+		io_context.run();
+		io_context.restart();
 	} while (!quit);
-
 	// Delete all global objects allocated by libprotobuf
 	google::protobuf::ShutdownProtobufLibrary();
 }
-
 /// @endcond

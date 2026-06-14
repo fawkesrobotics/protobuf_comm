@@ -52,7 +52,8 @@ namespace protobuf_comm {
 
 /** Constructor. */
 ProtobufStreamClient::ProtobufStreamClient()
-: resolver_(io_service_), socket_(io_service_), io_service_work_(io_service_)
+: resolver_(io_context_), socket_(io_context_),
+  io_work_guard_(boost::asio::make_work_guard(io_context_))
 {
 	message_register_     = new MessageRegister();
 	own_message_register_ = true;
@@ -72,7 +73,8 @@ ProtobufStreamClient::ProtobufStreamClient()
  * message creation.
  */
 ProtobufStreamClient::ProtobufStreamClient(std::vector<std::string> &proto_path)
-: resolver_(io_service_), socket_(io_service_), io_service_work_(io_service_)
+: resolver_(io_context_), socket_(io_context_),
+  io_work_guard_(boost::asio::make_work_guard(io_context_))
 {
 	message_register_     = new MessageRegister(proto_path);
 	own_message_register_ = true;
@@ -92,9 +94,9 @@ ProtobufStreamClient::ProtobufStreamClient(std::vector<std::string> &proto_path)
  */
 ProtobufStreamClient::ProtobufStreamClient(MessageRegister *      mr,
                                            frame_header_version_t header_version)
-: resolver_(io_service_),
-  socket_(io_service_),
-  io_service_work_(io_service_),
+: resolver_(io_context_),
+  socket_(io_context_),
+  io_work_guard_(boost::asio::make_work_guard(io_context_)),
   message_register_(mr),
   own_message_register_(false),
   frame_header_version_(header_version)
@@ -116,7 +118,8 @@ ProtobufStreamClient::ProtobufStreamClient(MessageRegister *      mr,
 ProtobufStreamClient::~ProtobufStreamClient()
 {
 	disconnect_nosig();
-	io_service_.stop();
+	io_work_guard_.reset();
+	io_context_.stop();
 	asio_thread_.join();
 	free(in_data_);
 	free(in_frame_header_);
@@ -125,22 +128,10 @@ ProtobufStreamClient::~ProtobufStreamClient()
 	}
 }
 
-#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
-static void
-run_asio_thread(boost::asio::io_service &io_service)
-{
-	io_service.run();
-}
-#endif
-
 void
 ProtobufStreamClient::run_asio()
 {
-#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 6))
-	asio_thread_ = std::thread(run_asio_thread, std::ref(io_service_));
-#else
-	asio_thread_ = std::thread([this]() { this->io_service_.run(); });
-#endif
+	asio_thread_ = std::thread([this]() { this->io_context_.run(); });
 }
 
 /** Asynchronous connect.
@@ -153,27 +144,21 @@ ProtobufStreamClient::run_asio()
 void
 ProtobufStreamClient::async_connect(const char *host, unsigned short port)
 {
-	ip::tcp::resolver::query query(host, boost::lexical_cast<std::string>(port));
-	resolver_.async_resolve(query,
+	resolver_.async_resolve(host,
+	                        boost::lexical_cast<std::string>(port),
 	                        boost::bind(&ProtobufStreamClient::handle_resolve,
 	                                    this,
 	                                    boost::asio::placeholders::error,
-	                                    boost::asio::placeholders::iterator));
+	                                    boost::asio::placeholders::results));
 }
 
 void
-ProtobufStreamClient::handle_resolve(const boost::system::error_code &err,
-                                     ip::tcp::resolver::iterator      endpoint_iterator)
+ProtobufStreamClient::handle_resolve(const boost::system::error_code &         err,
+                                     boost::asio::ip::tcp::resolver::results_type endpoints)
 {
 	if (!err) {
-		// Attempt a connection to each endpoint in the list until we
-		// successfully establish a connection.
-#if BOOST_ASIO_VERSION > 100409
 		boost::asio::async_connect(socket_,
-		                           endpoint_iterator,
-#else
-		socket_.async_connect(*endpoint_iterator,
-#endif
+		                           endpoints,
 		                           boost::bind(&ProtobufStreamClient::handle_connect,
 		                                       this,
 		                                       boost::asio::placeholders::error));

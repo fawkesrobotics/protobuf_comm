@@ -128,8 +128,8 @@ private: // types
 private: // methods
 	void disconnect_nosig();
 	void run_asio();
-	void handle_resolve(const boost::system::error_code &        err,
-	                    boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
+	void handle_resolve(const boost::system::error_code &          err,
+	                    boost::asio::ip::tcp::resolver::results_type endpoints);
 	void handle_connect(const boost::system::error_code &err);
 	void handle_write(const boost::system::error_code &error,
 	                  size_t /*bytes_transferred*/,
@@ -141,10 +141,10 @@ private: // methods
 private: // members
 	bool                           connected_;
 	std::mutex                     asio_mutex_;
-	boost::asio::io_service        io_service_;
+	boost::asio::io_context        io_context_;
 	boost::asio::ip::tcp::resolver resolver_;
 	boost::asio::ip::tcp::socket   socket_;
-	boost::asio::io_service::work  io_service_work_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> io_work_guard_;
 
 	boost::signals2::signal<void(uint16_t, uint16_t, std::shared_ptr<google::protobuf::Message>)>
 	                                                                 sig_rcvd_;

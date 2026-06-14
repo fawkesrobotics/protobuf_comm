@@ -88,21 +88,15 @@ main(int argc, char **argv)
 		recv_on_port = boost::lexical_cast<unsigned short>(argv[2]);
 	}
 	peer = new ProtobufBroadcastPeer("192.168.0.255", send_to_port, recv_on_port);
-
-	boost::asio::io_service io_service;
-
+	boost::asio::io_context io_context;
 	MessageRegister &message_register = peer->message_register();
 	message_register.add_message_type<Person>(1, 2);
-
 	peer->signal_received().connect(handle_message);
 	peer->signal_error().connect(handle_error);
-
 	// Construct a signal set registered for process termination.
-	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
-
+	boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
 	// Start an asynchronous wait for one of the signals to occur.
 	signals.async_wait(signal_handler);
-
 	if (argc >= 4) {
 		Person p;
 		p.set_id(1);
@@ -110,16 +104,12 @@ main(int argc, char **argv)
 		p.set_email("niemueller@kbsg.rwth-aachen.de");
 		peer->send(1, 2, p);
 	}
-
 	do {
-		io_service.run();
-		io_service.reset();
+		io_context.run();
+		io_context.restart();
 	} while (!quit);
-
 	delete peer;
-
 	// Delete all global objects allocated by libprotobuf
 	google::protobuf::ShutdownProtobufLibrary();
 }
-
 /// @endcond

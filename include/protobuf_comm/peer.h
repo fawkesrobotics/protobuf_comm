@@ -1,6 +1,6 @@
 
 /***************************************************************************
- *  server.h - Protobuf stream protocol - broadcast peer
+ *  peer.h - Protobuf stream protocol - broadcast peer
  *
  *  Created: Wed Jan 30 16:41:22 2013
  *  Copyright  2013  Tim Niemueller [www.niemueller.de]
@@ -187,18 +187,18 @@ private: // methods
 	void start_recv();
 	void start_resolve();
 	void retry_resolve(const boost::system::error_code &ec);
-	void handle_resolve(const boost::system::error_code &        err,
-	                    boost::asio::ip::udp::resolver::iterator endpoint_iterator);
+	void handle_resolve(const boost::system::error_code &         err,
+	                    boost::asio::ip::udp::resolver::results_type endpoints);
 	void handle_sent(const boost::system::error_code &error,
 	                 size_t /*bytes_transferred*/,
 	                 QueueEntry *entry);
 	void handle_recv(const boost::system::error_code &error, size_t bytes_rcvd);
 
 private: // members
-	boost::asio::io_service        io_service_;
-	boost::asio::ip::udp::resolver resolver_;
-	boost::asio::ip::udp::socket   socket_;
-	boost::asio::deadline_timer    resolve_retry_timer_;
+	boost::asio::io_context           io_context_;
+	boost::asio::ip::udp::resolver    resolver_;
+	boost::asio::ip::udp::socket      socket_;
+	boost::asio::steady_timer         resolve_retry_timer_;
 
 	std::list<boost::asio::ip::udp::endpoint> local_endpoints_;
 

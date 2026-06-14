@@ -49,12 +49,10 @@
 #ifndef _GLIBCXX_USE_SCHED_YIELD
 #	define _GLIBCXX_USE_SCHED_YIELD
 #endif
+#include <atomic>
 #include <mutex>
 #include <queue>
 #include <thread>
-#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-#	include <atomic>
-#endif
 
 namespace protobuf_comm {
 
@@ -140,7 +138,7 @@ private:
 		/** Shortcut for shared pointer of session. */
 		typedef boost::shared_ptr<Session> Ptr;
 
-		Session(ClientID id, ProtobufStreamServer *parent, boost::asio::io_service &io_service);
+		Session(ClientID id, ProtobufStreamServer *parent, boost::asio::io_context &io_context);
 		~Session();
 
 		/** Get underlying socket.
@@ -201,7 +199,7 @@ private: // methods
 	void disconnected(boost::shared_ptr<Session> session, const boost::system::error_code &error);
 
 private: // members
-	boost::asio::io_service        io_service_;
+	boost::asio::io_context        io_context_;
 	boost::asio::ip::tcp::acceptor acceptor_;
 	boost::signals2::signal<
 	  void(ClientID, uint16_t, uint16_t, std::shared_ptr<google::protobuf::Message>)>
@@ -214,12 +212,7 @@ private: // members
 
 	std::map<ClientID, boost::shared_ptr<Session>> sessions_;
 
-#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 	std::atomic<ClientID> next_cid_;
-#else
-	ClientID   next_cid_;
-	std::mutex next_cid_mutex_;
-#endif
 
 	MessageRegister *message_register_;
 	bool             own_message_register_;

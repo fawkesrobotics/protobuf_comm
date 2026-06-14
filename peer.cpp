@@ -57,10 +57,10 @@ namespace protobuf_comm {
  * @param port IPv4 UDP port to listen on and to send to
  */
 ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address, unsigned short port)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), port)),
+  resolve_retry_timer_(io_context_)
 {
 	message_register_     = new MessageRegister();
 	own_message_register_ = true;
@@ -78,10 +78,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address, unsigned
 ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              unsigned short    send_to_port,
                                              unsigned short    recv_on_port)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
+  resolve_retry_timer_(io_context_)
 {
 	message_register_     = new MessageRegister();
 	own_message_register_ = true;
@@ -96,10 +96,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
 ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string         address,
                                              unsigned short            port,
                                              std::vector<std::string> &proto_path)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), port)),
+  resolve_retry_timer_(io_context_)
 {
 	message_register_     = new MessageRegister(proto_path);
 	own_message_register_ = true;
@@ -119,10 +119,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string         address,
                                              unsigned short            send_to_port,
                                              unsigned short            recv_on_port,
                                              std::vector<std::string> &proto_path)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
+  resolve_retry_timer_(io_context_)
 {
 	message_register_     = new MessageRegister(proto_path);
 	own_message_register_ = true;
@@ -137,10 +137,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string         address,
 ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              unsigned short    port,
                                              MessageRegister * mr)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), port)),
-  resolve_retry_timer_(io_service_),
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), port)),
+  resolve_retry_timer_(io_context_),
   message_register_(mr),
   own_message_register_(false)
 {
@@ -159,10 +159,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              unsigned short    recv_on_port,
                                              const std::string crypto_key,
                                              const std::string cipher)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
+  resolve_retry_timer_(io_context_)
 {
 	ctor(address, send_to_port, crypto_key, cipher);
 	message_register_     = new MessageRegister();
@@ -183,10 +183,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              MessageRegister * mr,
                                              const std::string crypto_key,
                                              const std::string cipher)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
-  resolve_retry_timer_(io_service_),
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
+  resolve_retry_timer_(io_context_),
   message_register_(mr),
   own_message_register_(false)
 {
@@ -203,10 +203,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              unsigned short    port,
                                              const std::string crypto_key,
                                              const std::string cipher)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), port)),
-  resolve_retry_timer_(io_service_)
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), port)),
+  resolve_retry_timer_(io_context_)
 {
 	ctor(address, port, crypto_key, cipher);
 	message_register_     = new MessageRegister();
@@ -225,10 +225,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string address,
                                              MessageRegister * mr,
                                              const std::string crypto_key,
                                              const std::string cipher)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), port)),
-  resolve_retry_timer_(io_service_),
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), port)),
+  resolve_retry_timer_(io_context_),
   message_register_(mr),
   own_message_register_(false)
 {
@@ -250,10 +250,10 @@ ProtobufBroadcastPeer::ProtobufBroadcastPeer(const std::string      address,
                                              unsigned short         recv_on_port,
                                              MessageRegister *      mr,
                                              frame_header_version_t header_version)
-: io_service_(),
-  resolver_(io_service_),
-  socket_(io_service_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
-  resolve_retry_timer_(io_service_),
+: io_context_(),
+  resolver_(io_context_),
+  socket_(io_context_, ip::udp::endpoint(ip::udp::v4(), recv_on_port)),
+  resolve_retry_timer_(io_context_),
   message_register_(mr),
   own_message_register_(false)
 {
@@ -306,7 +306,7 @@ ProtobufBroadcastPeer::~ProtobufBroadcastPeer()
 {
 	resolve_retry_timer_.cancel();
 	if (asio_thread_.joinable()) {
-		io_service_.stop();
+		io_context_.stop();
 		asio_thread_.join();
 	}
 	free(in_data_);
@@ -347,7 +347,6 @@ ProtobufBroadcastPeer::setup_crypto(const std::string &key, const std::string &c
 		crypto_enc_ = new BufferEncryptor(key, cipher);
 
 		if (!enc_in_data_) {
-			// this depends on the cipher, but nothing is two times the incoming buffer...
 			enc_in_data_size_ = 2 * in_data_size_;
 			enc_in_data_      = malloc(enc_in_data_size_);
 		}
@@ -392,28 +391,22 @@ ProtobufBroadcastPeer::set_filter_self(bool filter)
 void
 ProtobufBroadcastPeer::run_asio()
 {
-#if BOOST_ASIO_VERSION > 100409
-	while (!io_service_.stopped()) {
-#endif
-		usleep(0);
-		io_service_.reset();
-		io_service_.run();
-#if BOOST_ASIO_VERSION > 100409
+	while (!io_context_.stopped()) {
+		io_context_.run();
 	}
-#endif
 }
 
 void
-ProtobufBroadcastPeer::handle_resolve(const boost::system::error_code &err,
-                                      ip::udp::resolver::iterator      endpoint_iterator)
+ProtobufBroadcastPeer::handle_resolve(const boost::system::error_code &          err,
+                                      boost::asio::ip::udp::resolver::results_type endpoints)
 {
 	if (!err) {
 		std::lock_guard<std::mutex> lock(outbound_mutex_);
 		outbound_ready_    = true;
-		outbound_endpoint_ = endpoint_iterator->endpoint();
+		outbound_endpoint_ = endpoints.begin()->endpoint();
 	} else {
 		sig_send_error_("Resolving endpoint failed, retrying");
-		resolve_retry_timer_.expires_from_now(boost::posix_time::seconds(2));
+		resolve_retry_timer_.expires_after(std::chrono::seconds(2));
 		resolve_retry_timer_.async_wait(boost::bind(&ProtobufBroadcastPeer::retry_resolve, this, _1));
 	}
 	start_send();
@@ -429,12 +422,12 @@ ProtobufBroadcastPeer::retry_resolve(const boost::system::error_code &ec)
 void
 ProtobufBroadcastPeer::start_resolve()
 {
-	ip::udp::resolver::query query(send_to_address_, boost::lexical_cast<std::string>(send_to_port_));
-	resolver_.async_resolve(query,
+	resolver_.async_resolve(send_to_address_,
+	                        boost::lexical_cast<std::string>(send_to_port_),
 	                        boost::bind(&ProtobufBroadcastPeer::handle_resolve,
 	                                    this,
 	                                    boost::asio::placeholders::error,
-	                                    boost::asio::placeholders::iterator));
+	                                    boost::asio::placeholders::results));
 }
 
 void
@@ -716,16 +709,10 @@ ProtobufBroadcastPeer::start_send()
 		size_t enc_size = crypto_enc_->encrypted_buffer_size(plain_size);
 
 		std::string plain_buf = std::string(plain_size, '\0');
-
-		plain_buf.replace(0,
-		                  boost::asio::buffer_size(entry->buffers[1]),
-		                  boost::asio::buffer_cast<const char *>(entry->buffers[1]),
-		                  boost::asio::buffer_size(entry->buffers[1]));
-
-		plain_buf.replace(boost::asio::buffer_size(entry->buffers[1]),
-		                  boost::asio::buffer_size(entry->buffers[2]),
-		                  boost::asio::buffer_cast<const char *>(entry->buffers[2]),
-		                  boost::asio::buffer_size(entry->buffers[2]));
+		size_t size1 = boost::asio::buffer_size(entry->buffers[1]);
+		size_t size2 = boost::asio::buffer_size(entry->buffers[2]);
+		boost::asio::buffer_copy(boost::asio::buffer(&plain_buf[0], size1), entry->buffers[1]);
+		boost::asio::buffer_copy(boost::asio::buffer(&plain_buf[size1], size2), entry->buffers[2]);
 
 		entry->encrypted_message.resize(enc_size);
 		crypto_enc_->encrypt(plain_buf, entry->encrypted_message);

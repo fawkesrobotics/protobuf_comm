@@ -51,15 +51,14 @@ namespace protobuf_comm {
  */
 
 /** Constructor.
- * @param id ID of the client, used to address messages from within your
- * application.
- * @param parent Parent stream server notified about events.
- * @param io_service ASIO I/O service to use for communication
+ * @param id ID of the client
+ * @param parent Parent stream server
+ * @param io_context ASIO I/O context to use for communication
  */
-ProtobufStreamServer::Session::Session(ClientID                 id,
-                                       ProtobufStreamServer *   parent,
-                                       boost::asio::io_service &io_service)
-: id_(id), parent_(parent), socket_(io_service)
+ProtobufStreamServer::Session::Session(ClientID              id,
+                                       ProtobufStreamServer *parent,
+                                       boost::asio::io_context &io_context)
+: id_(id), parent_(parent), socket_(io_context)
 {
 	in_data_size_    = 1024;
 	in_data_         = malloc(in_data_size_);
@@ -249,7 +248,7 @@ ProtobufStreamServer::Session::handle_read_message(const boost::system::error_co
  * @param port port to listen on
  */
 ProtobufStreamServer::ProtobufStreamServer(unsigned short port)
-: io_service_(), acceptor_(io_service_, ip::tcp::endpoint(ip::tcp::v6(), port))
+: io_context_(), acceptor_(io_context_, ip::tcp::endpoint(ip::tcp::v6(), port))
 {
 	message_register_     = new MessageRegister();
 	own_message_register_ = true;
@@ -263,13 +262,11 @@ ProtobufStreamServer::ProtobufStreamServer(unsigned short port)
 
 /** Constructor.
  * @param port port to listen on
- * @param proto_path file paths to search for proto files. All message types
- * within these files will automatically be registered and available for dynamic
- * message creation.
+ * @param proto_path file paths to search for proto files
  */
 ProtobufStreamServer::ProtobufStreamServer(unsigned short            port,
                                            std::vector<std::string> &proto_path)
-: io_service_(), acceptor_(io_service_, ip::tcp::endpoint(ip::tcp::v6(), port))
+: io_context_(), acceptor_(io_context_, ip::tcp::endpoint(ip::tcp::v6(), port))
 {
 	message_register_     = new MessageRegister(proto_path);
 	own_message_register_ = true;
@@ -286,8 +283,8 @@ ProtobufStreamServer::ProtobufStreamServer(unsigned short            port,
  * @param mr message register to use to (de)serialize messages
  */
 ProtobufStreamServer::ProtobufStreamServer(unsigned short port, MessageRegister *mr)
-: io_service_(),
-  acceptor_(io_service_, ip::tcp::endpoint(ip::tcp::v6(), port)),
+: io_context_(),
+  acceptor_(io_context_, ip::tcp::endpoint(ip::tcp::v6(), port)),
   message_register_(mr),
   own_message_register_(false)
 {
@@ -302,7 +299,7 @@ ProtobufStreamServer::ProtobufStreamServer(unsigned short port, MessageRegister 
 /** Destructor. */
 ProtobufStreamServer::~ProtobufStreamServer()
 {
-	io_service_.stop();
+	io_context_.stop();
 	asio_thread_.join();
 	if (own_message_register_) {
 		delete message_register_;
@@ -394,9 +391,8 @@ ProtobufStreamServer::send_to_all(uint16_t                   component_id,
                                   uint16_t                   msg_type,
                                   google::protobuf::Message &m)
 {
-	std::map<ClientID, boost::shared_ptr<Session>>::iterator s;
-	for (s = sessions_.begin(); s != sessions_.end(); ++s) {
-		send(s->first, component_id, msg_type, m);
+	for (auto &s : sessions_) {
+		send(s.first, component_id, msg_type, m);
 	}
 }
 
@@ -410,9 +406,8 @@ ProtobufStreamServer::send_to_all(uint16_t                                   com
                                   uint16_t                                   msg_type,
                                   std::shared_ptr<google::protobuf::Message> m)
 {
-	std::map<ClientID, boost::shared_ptr<Session>>::iterator s;
-	for (s = sessions_.begin(); s != sessions_.end(); ++s) {
-		send(s->first, component_id, msg_type, m);
+	for (auto &s : sessions_) {
+		send(s.first, component_id, msg_type, m);
 	}
 }
 
@@ -422,9 +417,8 @@ ProtobufStreamServer::send_to_all(uint16_t                                   com
 void
 ProtobufStreamServer::send_to_all(std::shared_ptr<google::protobuf::Message> m)
 {
-	std::map<ClientID, boost::shared_ptr<Session>>::iterator s;
-	for (s = sessions_.begin(); s != sessions_.end(); ++s) {
-		send(s->first, m);
+	for (auto &s : sessions_) {
+		send(s.first, m);
 	}
 }
 
@@ -434,9 +428,8 @@ ProtobufStreamServer::send_to_all(std::shared_ptr<google::protobuf::Message> m)
 void
 ProtobufStreamServer::send_to_all(google::protobuf::Message &m)
 {
-	std::map<ClientID, boost::shared_ptr<Session>>::iterator s;
-	for (s = sessions_.begin(); s != sessions_.end(); ++s) {
-		send(s->first, m);
+	for (auto &s : sessions_) {
+		send(s.first, m);
 	}
 }
 
@@ -456,10 +449,7 @@ ProtobufStreamServer::disconnect(ClientID client)
 void
 ProtobufStreamServer::start_accept()
 {
-#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 7))
-	std::lock_guard<std::mutex> lock(next_cid_mutex_);
-#endif
-	Session::Ptr new_session(new Session(next_cid_++, this, io_service_));
+	Session::Ptr new_session(new Session(next_cid_++, this, io_context_));
 	acceptor_.async_accept(new_session->socket(),
 	                       boost::bind(&ProtobufStreamServer::handle_accept,
 	                                   this,
@@ -492,15 +482,9 @@ ProtobufStreamServer::handle_accept(Session::Ptr                     new_session
 void
 ProtobufStreamServer::run_asio()
 {
-#if BOOST_ASIO_VERSION > 100409
-	while (!io_service_.stopped()) {
-#endif
-		usleep(0);
-		io_service_.reset();
-		io_service_.run();
-#if BOOST_ASIO_VERSION > 100409
+	while (!io_context_.stopped()) {
+		io_context_.run();
 	}
-#endif
 }
 
 } // end namespace protobuf_comm

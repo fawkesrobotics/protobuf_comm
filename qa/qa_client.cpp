@@ -83,13 +83,11 @@ handle_message(uint16_t comp_id, uint16_t msg_type, std::shared_ptr<google::prot
 int
 main(int argc, char **argv)
 {
-	boost::asio::io_service io_service;
-
-	boost::asio::deadline_timer timer_(io_service);
-	boost::asio::deadline_timer reconnect_timer_(io_service);
-	boost::asio::deadline_timer attmsg_timer_(io_service);
-	boost::asio::deadline_timer blink_timer_(io_service);
-
+	boost::asio::io_context io_context;
+	boost::asio::steady_timer timer_(io_context);
+	boost::asio::steady_timer reconnect_timer_(io_context);
+	boost::asio::steady_timer attmsg_timer_(io_context);
+	boost::asio::steady_timer blink_timer_(io_context);
 	client.signal_connected().connect(connected);
 	client.async_connect("127.0.0.1", 4444);
 
@@ -99,14 +97,13 @@ main(int argc, char **argv)
 	client.signal_received().connect(handle_message);
 
 	// Construct a signal set registered for process termination.
-	boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
-
+	boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
 	// Start an asynchronous wait for one of the signals to occur.
 	signals.async_wait(signal_handler);
 
 	do {
-		io_service.run();
-		io_service.reset();
+		io_context.run();
+		io_context.restart();
 	} while (!quit);
 
 	// Delete all global objects allocated by libprotobuf
